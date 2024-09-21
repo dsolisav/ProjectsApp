@@ -1,0 +1,194 @@
+"use client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { z } from "zod";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+
+const signupSchema = z.object({
+  username: z
+    .string()
+    .min(3, {
+      message: "Username must have at least 3 characters.",
+    })
+    .max(20, {
+      message: "Username can't exceed 20 characters.",
+    }),
+  email: z.string().email({ message: "You must input a valid email." }),
+	password: z
+    .string()
+    .min(6, {
+      message: "Password must have at least 6 characters.",
+    }),
+  role: z.enum(["client", "project_manager", "designer"], {
+    message: "Role must be client, project manager or designer.",
+  }),
+});
+
+export default function SignUpForm() {
+  const form = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof signupSchema>) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
+    console.log(values);
+  }
+  return (
+		<div className="p-6">
+			<Card className="w-[400px]">
+				<CardHeader>
+					<CardTitle>Sign Up</CardTitle>
+					<CardDescription>
+						Create your account in Designio to get started.
+					</CardDescription>
+				</CardHeader>
+				<div>
+					<CardContent>
+						<Form {...form}>
+							<form onSubmit={form.handleSubmit(onSubmit)}>
+								<div className="mb-6">
+									<FormField
+										control={form.control}
+										name="username"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Username</FormLabel>
+												<FormControl>
+													<Input
+														id="username"
+														placeholder="Enter your username"
+														{...field}
+													/>
+												</FormControl>
+												<FormDescription>
+													This is your public display name.
+												</FormDescription>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="mb-6">
+									<FormField
+										control={form.control}
+										name="email"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Email</FormLabel>
+												<FormControl>
+													<Input
+														id="email"
+														placeholder="Enter your email"
+														{...field}
+													/>
+												</FormControl>
+												<FormDescription>
+													This is the email for your account.
+												</FormDescription>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+
+								<div className="mb-6">
+									<FormField
+										control={form.control}
+										name="password"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Password</FormLabel>
+												<FormControl>
+													<Input
+														id="password"
+														placeholder="Set a password"
+														{...field}
+													/>
+												</FormControl>
+												<FormDescription>
+													This is the password for your account.
+												</FormDescription>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+
+								<div>
+									<FormField
+										control={form.control}
+										name="role"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Role</FormLabel>
+												<Select
+													onValueChange={field.onChange}
+													value={field.value}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue placeholder="Select your role" />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value="client">Client</SelectItem>
+														<SelectItem value="project_manager">
+															Project Manager
+														</SelectItem>
+														<SelectItem value="designer">Designer</SelectItem>
+													</SelectContent>
+												</Select>
+												<FormDescription>
+													This is the role you will play in your projects.
+												</FormDescription>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<CardFooter className="flex justify-between mt-3">
+									<Link href="/">
+										<Button variant="outline">Cancel</Button>
+									</Link>
+									<Button type="submit">Sign Up</Button>
+								</CardFooter>
+							</form>
+						</Form>
+					</CardContent>
+				</div>
+			</Card>
+		</div>
+  );
+}
