@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,33 +26,46 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 
 const signupSchema = z.object({
-  username: z
-    .string()
-    .min(3, {
-      message: "Username must have at least 3 characters.",
-    })
-    .max(20, {
-      message: "Username can't exceed 20 characters.",
-    }),
+  email: z.string().email({ message: "You must input a valid email." }),
   password: z.string().min(6, {
     message: "Password must have at least 6 characters.",
   }),
 });
 
 export default function LoginForm() {
+
+  const router = useRouter()
+
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof signupSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof signupSchema>) {
+    const loginResult = await logInUser(values.email, values.password);
+    if (loginResult.error) {
+			console.log(loginResult.error);
+			return;  
+		}
+
+    router.push('/')
+    router.refresh();
+    
   }
+
+  async function logInUser(userEmail: string, userPassword: string) {
+    let { data, error } = await supabase.auth.signInWithPassword({
+      email: userEmail,
+      password: userPassword,
+    });
+    if (data) console.log(data);
+    if (error) console.log(error);
+    return { data, error };
+  }
+
   return (
     <div className="p-6">
       <Card className="w-[400px]">
@@ -67,14 +82,14 @@ export default function LoginForm() {
                 <div className="mb-6">
                   <FormField
                     control={form.control}
-                    name="username"
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input
-                            id="username"
-                            placeholder="Enter your username"
+                            id="email"
+                            placeholder="Enter your email"
                             {...field}
                           />
                         </FormControl>
