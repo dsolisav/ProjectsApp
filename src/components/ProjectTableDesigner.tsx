@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getUserData } from "@/lib/utils";
+import Link from "next/link";
 
 interface Project {
   id: number;
@@ -81,8 +82,13 @@ export default function ProjectTableDesigner() {
     fetchProjects();
   }, [userId]);
 
+  const getFileUrl = (filePath: string) => {
+    const { data } = supabase.storage.from('files').getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="p-7">
       <Table>
         <TableHeader>
           <TableRow>
@@ -100,7 +106,20 @@ export default function ProjectTableDesigner() {
                 {row.description}
               </TableCell>
               <TableCell>{row.status}</TableCell>
-              <TableCell>{row.file_path ? row.file_path.split("/").pop() : 'No file'}</TableCell>
+              <TableCell>
+                {row.file_path ? (
+                  <Link 
+                    href={getFileUrl(row.file_path)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Project file
+                  </Link>
+                ) : (
+                  'No file'
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

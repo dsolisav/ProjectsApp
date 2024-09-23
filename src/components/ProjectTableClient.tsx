@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Table,
@@ -13,30 +13,57 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "./ui/textarea";
 import { Upload } from "lucide-react";
 import { getUserData } from "@/lib/utils";
-import * as React from "react";
 import { v4 as uuidv4 } from "uuid";
+import Link from "next/link";
 
 interface TableRow {
-  files: any;
   id: number;
   title: string;
   description: string;
   status: string;
-  fileName: string;
+  files: { file_path: string }[];
 }
 
 export default function ProjectTableClient() {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newFile, setNewFile] = useState<File | null>(null);
-  const [filepath, setFilepath] = useState("");
+  const [titleError, setTitleError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
+  const [fileError, setFileError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [projects, setProjects] = useState<TableRow[]>([]);
-
-  // const [media, setMedia] = useState([]);
   const [userId, setUserId] = useState("");
+
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!newTitle) {
+      setTitleError("Title is required.");
+      isValid = false;
+    } else {
+      setTitleError("");
+    }
+
+    if (!newDescription) {
+      setDescriptionError("Description is required.");
+      isValid = false;
+    } else {
+      setDescriptionError("");
+    }
+
+    if (!newFile) {
+      setFileError("A file must be uploaded.");
+      isValid = false;
+    } else {
+      setFileError("");
+    }
+
+    return isValid;
+  };
 
   async function createProject() {
     const { data, error } = await supabase
@@ -60,45 +87,51 @@ export default function ProjectTableClient() {
       .insert([
         {
           project_id: project_id,
-          file_path: uploadedFilepath,  // Use the file path passed from uploadFile
+          file_path: uploadedFilepath,
           uploaded_at: new Date(),
         },
       ])
       .select();
-  
+
     if (error) {
       console.log(error);
     }
   }
 
   const addRow = async () => {
-    if (newTitle && newDescription && newFile) {
-      const newRow: TableRow = {
-        id: Date.now(),
-        title: newTitle,
-        description: newDescription,
-        status: "pending",
-        fileName: newFile.name,
-        files: [{ file_path: newFile.name }],
-      };
-      const uploadedFilepath = await uploadFile(newFile);
-      if (!uploadedFilepath) {
-        console.error("File upload failed.");
-        return;
-      }
+    if (!validateForm()) {
+      return;
+    }
 
-      const projectResult = await createProject();
-      if (projectResult && projectResult.data) {
+    const uploadedFilepath = await uploadFile(newFile!);
+    if (!uploadedFilepath) {
+      console.error("File upload failed.");
+      return;
+    }
 
-        await createFile(projectResult.data[0].id, uploadedFilepath);
+    const projectResult = await createProject();
+    if (projectResult && projectResult.data) {
+      await createFile(projectResult.data[0].id, uploadedFilepath);
+      
+      // Fetch the newly created project with its file
+      const { data: newProjectData, error } = await supabase
+        .from("projects")
+        .select("*, files(file_path)")
+        .eq("id", projectResult.data[0].id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching new project:", error);
+      } else {
+        setProjects((prevProjects) => [...prevProjects, newProjectData]);
       }
-      setProjects((prevProjects) => [...prevProjects, newRow]);
-      setNewTitle("");
-      setNewDescription("");
-      setNewFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    }
+
+    setNewTitle("");
+    setNewDescription("");
+    setNewFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -108,7 +141,7 @@ export default function ProjectTableClient() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function fetchUser() {
       const userData = await getUserData();
       if (userData) {
@@ -118,17 +151,16 @@ export default function ProjectTableClient() {
     fetchUser();
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function fetchProjects() {
       if (userId) {
         const { data, error } = await supabase
           .from("projects")
-          .select("*,files(file_path)")
+          .select("*, files(file_path)")
           .eq("client_id", userId);
         if (error) {
           console.error(error);
         } else {
-          console.log(data);
           setProjects(data);
         }
       }
@@ -136,13 +168,13 @@ export default function ProjectTableClient() {
     fetchProjects();
   }, [userId]);
 
-  const handleFileButtonClick = async () => {
+  const handleFileButtonClick = () => {
     fileInputRef.current?.click();
   };
 
   async function uploadFile(file: File) {
     const fileId = uuidv4();
-    const newFilepath = userId + "/" + file.name;
+    const newFilepath = userId + "/" + fileId;
     const { data, error } = await supabase.storage
       .from("files")
       .upload(newFilepath, file);
@@ -150,8 +182,13 @@ export default function ProjectTableClient() {
     return newFilepath;
   }
 
+  const getFileUrl = (filePath: string) => {
+    const { data } = supabase.storage.from("files").getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="p-7">
       <Table>
         <TableHeader>
           <TableRow>
@@ -162,19 +199,29 @@ export default function ProjectTableClient() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {projects.map((row) => {
-            console.log(row);
-            return (
-              <TableRow key={row.id}>
-                <TableCell>{row.title}</TableCell>
-                <TableCell className="max-w-[300px] break-words whitespace-pre-line">
-                  {row.description}
-                </TableCell>
-                <TableCell>{row.status}</TableCell>
-                <TableCell>{row.files[0].file_path.split("/").pop()}</TableCell>
-              </TableRow>
-            );
-          })}
+          {projects.map((row) => (
+            <TableRow key={row.id}>
+              <TableCell>{row.title}</TableCell>
+              <TableCell className="max-w-[300px] break-words whitespace-pre-line">
+                {row.description}
+              </TableCell>
+              <TableCell>{row.status}</TableCell>
+              <TableCell>
+                {row.files && row.files[0] ? (
+                  <Link
+                    href={getFileUrl(row.files[0].file_path)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Project file
+                  </Link>
+                ) : (
+                  "No file"
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
 
@@ -187,15 +234,20 @@ export default function ProjectTableClient() {
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
           />
+          {titleError && <p className="text-red-500 text-sm">{titleError}</p>}
         </div>
         <div>
           <Label htmlFor="description">Description</Label>
-          <Input
+          <Textarea
             id="description"
             placeholder="Enter description"
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
+            className="min-h-[100px]"
           />
+          {descriptionError && (
+            <p className="text-red-500 text-sm">{descriptionError}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="file">Upload File</Label>
@@ -220,6 +272,7 @@ export default function ProjectTableClient() {
             onChange={handleFileChange}
             className="sr-only"
           />
+          {fileError && <p className="text-red-500 text-sm">{fileError}</p>}
         </div>
         <Button onClick={addRow}>Create new project</Button>
       </div>
