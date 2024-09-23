@@ -15,15 +15,13 @@ export default function Navbar() {
   const [user, setUser] = React.useState<any>(null);
 
   const pathname = usePathname();
-  const router = useRouter()
-
-  
+  const router = useRouter();
 
   async function logOut() {
     let { error } = await supabase.auth.signOut();
     if (!error) {
-      setUser(null); // Explicitly set the user state to null
-      router.push("/"); // Optional: Redirect to home page or wherever you want
+      setUser(null);
+      router.push("/"); 
     } else {
       console.error(error);
     }
@@ -79,9 +77,11 @@ export default function Navbar() {
                 <div className="md:flex justify-between gap-4 hidden">
                   {user != null && user.role == "authenticated" ? (
                     <>
-                      <Button onClick={() => {
-                        logOut()
-                      }}>
+                      <Button
+                        onClick={() => {
+                          logOut();
+                        }}
+                      >
                         Log Out
                       </Button>
                     </>
@@ -110,30 +110,59 @@ export default function Navbar() {
                   </SheetTrigger>
                   <SheetContent side="right">
                     <div className="flex flex-col space-y-4 mt-4">
-                      <Link
-                        href="/login"
-                        className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Log In
-                      </Link>
-                      <Link
-                        href="/signup"
-                        className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Sign Up
-                      </Link>
-                      {navItems.map((item) => (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          {item.name}
-                        </Link>
-                      ))}
+                      {user != null && user.role == "authenticated" ? (
+                        <>
+                          <p
+                            className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
+                            onClick={() => {
+                              logOut();
+                            }}
+                          >
+                            Log Out
+                          </p>
+                          <Link
+                            href="/"
+                            className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Home
+                          </Link>
+                          <Link
+                            href="/dashboard"
+                            className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Dashboard
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            href="/login"
+                            className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Log In
+                          </Link>
+                          <Link
+                            href="/signup"
+                            className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            Sign Up
+                          </Link>
+                          {navItems.map((item) => (
+                            <Link
+                              key={item.name}
+                              href={item.href}
+                              className="text-sm text-bluebase font-medium transition-colors hover:text-primary"
+                              onClick={() => setIsOpen(false)}
+                            >
+                              {item.name}
+                            </Link>
+                          ))}
+                        </>
+                      )}
                     </div>
                   </SheetContent>
                 </Sheet>

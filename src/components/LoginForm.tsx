@@ -31,9 +31,10 @@ const signupSchema = z.object({
     message: "Password must have at least 6 characters.",
   }),
 });
+import { useToast } from "@/hooks/use-toast"
 
 export default function LoginForm() {
-
+  const { toast } = useToast()
   const router = useRouter()
 
   const form = useForm<z.infer<typeof signupSchema>>({
@@ -48,6 +49,10 @@ export default function LoginForm() {
     const loginResult = await logInUser(values.email, values.password);
     if (loginResult.error) {
 			console.log(loginResult.error);
+      toast({
+        title: "Failed Log In",
+        description: "Could not Log In, check your credentials and try again.",
+      })
 			return;  
 		}
 
@@ -68,7 +73,7 @@ export default function LoginForm() {
 
   return (
     <div className="p-6">
-      <Card className="w-[400px]">
+      <Card className="w-[200px] sm:w-[400px]">
         <CardHeader>
           <CardTitle>Log In</CardTitle>
           <CardDescription>
@@ -108,6 +113,7 @@ export default function LoginForm() {
                         <FormControl>
                           <Input
                             id="password"
+                            type="password"
                             placeholder="Enter your password"
                             {...field}
                           />

@@ -53,6 +53,8 @@ export default function ProjectTablePM() {
   const [projects, setProjects] = useState<TableRow[]>([]);
   const [editingProject, setEditingProject] = useState<TableRow | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(0)
   const [designers, setDesigners] = useState<Designer[]>([]);
   const [errors, setErrors] = useState({
     title: "",
@@ -146,6 +148,11 @@ export default function ProjectTablePM() {
     setIsModalOpen(true);
   };
 
+  const setToDelete = (project_id : number) => {
+    setProjectToDelete(project_id)
+    setIsDeleteModalOpen(true)
+  }
+
   const handleDelete = async (id: number) => {
     const { error } = await supabase.from("projects").delete().eq("id", id);
 
@@ -154,6 +161,8 @@ export default function ProjectTablePM() {
     } else {
       setProjects(projects.filter((project) => project.id !== id));
     }
+    setIsDeleteModalOpen(false)
+
   };
 
   const handleSave = async () => {
@@ -305,7 +314,7 @@ export default function ProjectTablePM() {
         <TableBody>
           {projects.map((row) => (
             <TableRow key={row.id}>
-              <TableCell>{row.title}</TableCell>
+              <TableCell className="font-semibold">{row.title}</TableCell>
               <TableCell className="max-w-[300px] break-words whitespace-pre-line">
                 {row.description}
               </TableCell>
@@ -328,12 +337,12 @@ export default function ProjectTablePM() {
               <TableCell>
                 {row.assigned_designer_name || "Unassigned"}
               </TableCell>
-              <TableCell className="flex justify-between gap-2">
-                <Button onClick={() => handleEdit(row)} className="mr-2">
+              <TableCell className="">
+                <Button onClick={() => handleEdit(row)} className="mr-2 mb-2">
                   Edit
                 </Button>
                 <Button
-                  onClick={() => handleDelete(row.id)}
+                  onClick={() => setToDelete(row.id)}
                   variant="destructive"
                 >
                   Delete
@@ -343,6 +352,21 @@ export default function ProjectTablePM() {
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open = {isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+          </DialogHeader>
+          <p>
+            Are you sure you want to delete this project?
+          </p>
+          <DialogFooter>
+            <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => handleDelete(projectToDelete)}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[425px]">

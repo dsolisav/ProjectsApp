@@ -101,7 +101,7 @@ export default function ProjectTableDesigner() {
         <TableBody>
           {projects.map((row) => (
             <TableRow key={row.id}>
-              <TableCell>{row.title}</TableCell>
+              <TableCell className="font-semibold">{row.title}</TableCell>
               <TableCell className="max-w-[300px] break-words whitespace-pre-line">
                 {row.description}
               </TableCell>

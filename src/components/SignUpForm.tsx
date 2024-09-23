@@ -32,6 +32,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast"
 
 const signupSchema = z.object({
   username: z
@@ -52,6 +53,7 @@ const signupSchema = z.object({
 });
 
 export default function SignUpForm() {
+  const { toast } = useToast()
 	const router = useRouter()
   async function signUpNewUser(
     userEmail: string,
@@ -104,15 +106,17 @@ export default function SignUpForm() {
       values.role
     );
   
-    console.log('Sign Up Result:', signUpResult);
     
-    // Check if there is an error
     if (signUpResult.error) {
+      toast({
+        title: "Failed Sign Up",
+        description: "Could not Sign Up, remember not to use an already registered email address.",
+      })
       console.log(signUpResult.error);
       return;
     }
   
-    // Ensure user ID is present
+
     const userId = signUpResult.data.user?.id;
     if (!userId) {
       console.error('User ID is missing after sign-up');
@@ -136,7 +140,7 @@ export default function SignUpForm() {
 
   return (
     <div className="p-6">
-      <Card className="w-[400px]">
+      <Card className="w-[280px] sm:w-[400px]">
         <CardHeader>
           <CardTitle>Sign Up</CardTitle>
           <CardDescription>
@@ -202,6 +206,7 @@ export default function SignUpForm() {
                         <FormControl>
                           <Input
                             id="password"
+                            type="password"
                             placeholder="Set a password"
                             {...field}
                           />
