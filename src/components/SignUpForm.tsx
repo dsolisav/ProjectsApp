@@ -81,8 +81,8 @@ export default function SignUpForm() {
   ) {
     const { data, error } = await supabase
       .from("users")
-      .insert([{ username: userUsername, email: userEmail, role: userRole }])
-      .select();
+      .update([{ username: userUsername, role: userRole }])
+      .eq('email', userEmail);
     if (data) console.log(data);
     if (error) console.log(error);
 		return { data, error }
@@ -97,32 +97,42 @@ export default function SignUpForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof signupSchema>) => {
-		const signUpResult = await signUpNewUser(
-			values.email,
-			values.password,
-			values.username,
-			values.role
-		);
-		
-		if (signUpResult.error) {
-			console.log(signUpResult.error);
-			return; 
-		}
-	
-		const createUserResult = await createUser(
-			values.email,
-			values.username,
-			values.role
-		);
-		
-		if (createUserResult.error) {
-			console.log(createUserResult.error);
-			return;  
-		}
-	
-		router.push('/');
-		router.refresh();
-	};
+    const signUpResult = await signUpNewUser(
+      values.email,
+      values.password,
+      values.username,
+      values.role
+    );
+  
+    console.log('Sign Up Result:', signUpResult);
+    
+    // Check if there is an error
+    if (signUpResult.error) {
+      console.log(signUpResult.error);
+      return;
+    }
+  
+    // Ensure user ID is present
+    const userId = signUpResult.data.user?.id;
+    if (!userId) {
+      console.error('User ID is missing after sign-up');
+      return;
+    }
+  
+    const createUserResult = await createUser(
+      values.email,
+      values.username,
+      values.role
+    );
+  
+    if (createUserResult.error) {
+      console.log(createUserResult.error);
+      return;
+    }
+  
+    router.push('/');
+    router.refresh();
+  };
 
   return (
     <div className="p-6">

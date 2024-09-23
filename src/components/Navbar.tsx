@@ -7,6 +7,7 @@ import { Menu } from "lucide-react";
 import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { getUserData } from "@/lib/utils";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -16,12 +17,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter()
 
-  async function getUserData() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    return user;
-  }
+  
 
   async function logOut() {
     let { error } = await supabase.auth.signOut();
