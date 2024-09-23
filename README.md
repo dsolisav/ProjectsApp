@@ -20,3 +20,10 @@ Welcome to **Designio**, a robust project management application built with **Ne
   - **Assigned Designer**
 
 - **Project CRUD Operations**: All Create, Read, Update, and Delete (CRUD) operations for projects are supported and managed by the respective user roles within the application.
+- **Data Validation**: The input fields in the application features proper data validation that ensures data integrity.
+### How to use
+1. **Create a Client account** to start creating projects via the dashboard.
+2. **Create Designer accounts** for team members who will work on the projects.
+3. **Create a Project Manager account** to oversee and manage all projects through the dashboard.
+   - As a Project Manager, you can view, assign, and manage all projects.
+4. Once projects are assigned to Designers, they can view their assigned tasks in their dashboard.
