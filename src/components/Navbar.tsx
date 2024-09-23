@@ -35,7 +35,6 @@ export default function Navbar() {
     fetchUser();
   }, [pathname]);
 
-  const { setTheme } = useTheme();
   const [isOpen, setIsOpen] = React.useState(false);
 
   const navItems = [

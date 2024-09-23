@@ -181,7 +181,6 @@ export default function ProjectTablePM() {
 
     setErrors(newErrors);
 
-    // If no validation errors, proceed to save
     if (Object.values(newErrors).every((error) => !error)) {
       const { error: projectError } = await supabase
         .from("projects")
@@ -197,7 +196,6 @@ export default function ProjectTablePM() {
         return;
       }
 
-      // Project assignment logic (same as your existing code)
       if (
         editingProject.assigned_designer_id &&
         editingProject.assigned_designer_id !== "unassigned"
@@ -238,7 +236,6 @@ export default function ProjectTablePM() {
         }
       }
 
-      // Refresh and close modal
       const { data: updatedProject, error: fetchError } = await supabase
         .from("projects")
         .select(
