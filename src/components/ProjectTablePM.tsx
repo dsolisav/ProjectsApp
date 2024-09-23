@@ -359,8 +359,8 @@ export default function ProjectTablePM() {
             Are you sure you want to delete this project?
           </p>
           <DialogFooter>
-            <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => handleDelete(projectToDelete)}>Delete</Button>
+            <Button className="mb-1" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+            <Button className="mb-1" variant="destructive" onClick={() => handleDelete(projectToDelete)}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -460,8 +460,8 @@ export default function ProjectTablePM() {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave}>Save Changes</Button>
+            <Button className="mb-1" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button className="mb-1" onClick={handleSave}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
