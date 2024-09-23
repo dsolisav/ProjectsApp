@@ -21,6 +21,8 @@ Welcome to **Designio**, a robust project management application built with **Ne
 
 - **Project CRUD Operations**: All Create, Read, Update, and Delete (CRUD) operations for projects are supported and managed by the respective user roles within the application.
 - **Data Validation**: The input fields in the application features proper data validation that ensures data integrity.
+- **Route security and protection:** To ensure security, the dashboard route is protected and only available to authenticated users.
+
 ### How to use
 1. **Create a Client account** to start creating projects via the dashboard.
 2. **Create Designer accounts** for team members who will work on the projects.
